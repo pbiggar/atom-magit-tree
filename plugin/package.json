@@ -1,6 +1,6 @@
 {
   "name": "treecommit",
-  "main": "./lib/treecommit",
+  "main": "./lib/treecommit.js",
   "version": "0.0.1",
   "description": "Commit, stage and push directly from tree-view",
   "keywords": [

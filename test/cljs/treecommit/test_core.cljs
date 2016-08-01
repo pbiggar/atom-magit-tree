@@ -1,6 +1,5 @@
 (ns treecommit.test-core
-  (:require-macros [jasmine.macros :refer [describe it expect]]
-                   [util.inspect :refer [inspect]])
+  (:require-macros [jasmine.macros :refer [describe it expect]])
   (:require [cljs.nodejs :as nodejs]
             [treecommit.core :as tc]
             [clojure.string :as str]))

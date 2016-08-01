@@ -12,24 +12,27 @@
 
   :clean-targets ["target"
                   "out"
-                  "plugin/lib/treecommit.js"
+                  "treecommit.js"
                   "node_modules"]
 
   :plugins [[lein-cljsbuild "1.1.1"]
             [lein-npm "0.6.1"]]
 
+  :source-paths ["src/cljs" "src/clj" "test/cljs" "test/clj"]
+  :profiles {:dev {:source-paths ["src/dev"]
+         :dependencies [[thheller/shadow-build "1.0.213"]
+                        [thheller/shadow-devtools "0.1.42"]]}}
+
   :cljsbuild
   {:builds
    [{:id :plugin
      :source-paths ["src/cljs" "src/clj" "test/cljs" "test/clj"]
-     :compiler {:optimizations :none
+     :compiler {:optimizations :whitespace
                 :target :nodejs
-                :warnings {:single-segment-namespace false}
                 :pretty-print true
-                :main treecommit.test-core
+                :main treecommit.core
                 :cache-analysis true
-                :source-map true
+                ;                :source-map true
                 :parallel-build true
-                :output-dir "out"
-                :output-to "out/main.js"}}
-    ]})
+                ;                :output-dir "./plugin/lib/out"
+                :output-to "./plugin/lib/main.js"}}]})
