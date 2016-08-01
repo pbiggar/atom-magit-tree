@@ -1,0 +1,15 @@
+{
+  "name": "treecommit",
+  "main": "./lib/treecommit",
+  "version": "0.0.1",
+  "description": "Commit, stage and push directly from tree-view",
+  "keywords": [
+  ],
+  "repository": "https://github.com/pbiggar/atom-treecommit",
+  "license": "MIT",
+  "engines": {
+    "atom": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+  }
+}
