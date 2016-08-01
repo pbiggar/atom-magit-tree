@@ -7,7 +7,8 @@
   (fn []
     (-> js/atom .workspace .getActiveEditor)))
 
-(defn stage [])
+(defn stage []
+  (println "staging"))
 
 (defn activate [state]
   (println "Activating treecommit")

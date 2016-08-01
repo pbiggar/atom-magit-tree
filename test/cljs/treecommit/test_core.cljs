@@ -1,4 +1,4 @@
-(ns treeview.test-core
+(ns treecommit.test-core
   (:require-macros [jasmine.macros :refer [describe it expect]]
                    [util.inspect :refer [inspect]])
   (:require [cljs.nodejs :as nodejs]
