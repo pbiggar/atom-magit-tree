@@ -9,6 +9,8 @@
   (fn []
     (-> js/atom .workspace .getActiveEditor)))
 
+
+
 (defn stage []
   (println "staging")
   ; get the panel we're on - that's treeview
@@ -31,7 +33,7 @@
   ;       (me.tualoGitContextView.gitStatus(entry) for entry in entries)
 
 
-  (println "staging"))
+  (println "staging4"))
 
 (defn unstage []
   (println "unstaging"))
@@ -42,29 +44,34 @@
 (defn open-chunks []
   (println "open-chunks"))
 
-
 (defn activate [state]
-  (println "Activating treecommit")
+  ;; this is a horror show. The repl won't load because it looks for "goog" from treecommit.goog. Why? Unsure. Probably something to do with node-global-prefix.
+  (set! js/treecommit.goog js/goog)
+
+  (println "Activating treecommit3")
   (.add js/atom.commands "atom-workspace" "treecommit:stage", stage)
   (.add js/atom.commands "atom-workspace" "treecommit:unstage", unstage)
   (.add js/atom.commands "atom-workspace" "treecommit:commit", commit)
   (.add js/atom.commands "atom-workspace" "treecommit:open-chunks", open-chunks))
 
-(defn deactivate [state]
+
+
+(defn deactivate []
   (println "Deactivating from treecommit"))
 
+(defn serialize [])
 
-(set! js/module.exports
-  (js-obj "activate" activate
-          "deactivate" deactivate
-          "stage" stage
-          "unstage" unstage
-          "commit" commit
-          "open-chunks" open-chunks
-          "run_tests" #(treecommit.test-core/run-tests)))
+(defn stop []
+  (let [state (serialize)]
+    (deactivate)
+    state))
+
+(defn start [state]
+  (activate state))
 
 (defn -main [& args]
   (println "running main()"))
+
 
 ;; noop - needed for :nodejs CLJS build
 (set! *main-cli-fn* (constantly 0))

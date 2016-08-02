@@ -6,13 +6,13 @@
 
 (defn- plugin-setup []
   (-> (cljs/init-state)
-      (cljs/set-build-options
-       {:node-global-prefix "global.treecommit"})
       (cljs/find-resources-in-classpath)
       (umd/create-module
        {:activate 'treecommit.core/activate
-        :deactivate 'treecommit.core/deactivate}
+        :deactivate 'treecommit.core/deactivate
+        :serialize 'treecommit.core/serialize}
        {:output-to "plugin/lib/treecommit.js"})))
+
 
 (defn release []
   (-> (plugin-setup)
@@ -20,6 +20,19 @@
       (cljs/closure-optimize :simple)
       (umd/flush-module))
   :done)
+
+(defn dev-repl []
+  (-> (plugin-setup)
+      (devtools/start-loop
+        {:before-load 'treecommit.core/stop
+         :after-load 'treecommit.core/start
+         :reload-with-state true
+         :console-support true
+         :node-eval false}
+        (fn [state modified]
+          (-> state
+              (cljs/compile-modules)
+              (umd/flush-unoptimized-module))))))
 
 (defn dev []
   (-> (plugin-setup)
@@ -29,3 +42,7 @@
          (-> state
              (cljs/compile-modules)
              (umd/flush-unoptimized-module))))))
+
+
+(defn -main [& args]
+  (dev-repl))
