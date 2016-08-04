@@ -9,7 +9,7 @@
 
 (defmacro inspect [value]
   `(do
-      (when (= nil (aget js/global :saved))
+      (when (= nil (aget js/global "saved"))
         (set! js/saved (cljs.core/clj->js []))
         (set! js/saved_clj (cljs.core/clj->js [])))
 
