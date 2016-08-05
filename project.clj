@@ -6,7 +6,8 @@
 
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.89"]
-                 [funcool/cuerdas "0.8.0"]]
+                 [funcool/cuerdas "0.8.0"]
+                 [binaryage/devtools "0.8.0"]]
 
   :npm {:dependencies [[source-map-support "*"]
                        [gift "0.9.0"]]

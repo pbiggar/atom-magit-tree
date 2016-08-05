@@ -1,10 +1,12 @@
 (ns treecommit.core
   (:require-macros [util.inspect :refer [inspect]])
   (:require [cljs.nodejs :as nodejs]
+            [devtools.core :as devtools]
             [cljs.pprint]
             [cuerdas.core :as str]))
 
 (nodejs/enable-util-print!)
+(devtools/install!)
 
 (def ^:dynamic active-editor ; for testing
   (fn []
@@ -22,23 +24,35 @@
   (-> js/atom .-project .getRepositories firstA))
 
 (defn get-selected-path [e]
-  ; dirs have a .header below .selected
   (-> e
       .-target
       (.querySelector ".tree-view .selected [data-path]")
       (.getAttribute "data-path")))
 
+(defn callback [op file]
+  (fn [err stdout stderr]
+    (when err
+      (println (str "Error found when doing '" op "' on " file ": \n" err))
+      (println (str "stdout was: " stdout))
+      (println (str "stderr was: " stderr)))))
+
 (defn stage [e]
-  ; get the panel we're on - that's treeview
   (when (in-treeview? e)
     (let [repo (get-repo)
-          gifted (gift (inspect (-> repo .-path (str/strip-suffix "/.git"))))
+          gifted (gift (-> repo .-path (str/strip-suffix "/.git")))
           file (get-selected-path e)]
 
-      (inspect (.add gifted #js[file] (fn [& args] (inspect args)))))))
+      (.add gifted #js[file]
+            (callback "stage" file)))))
 
-(defn unstage []
-  (println "unstaging"))
+(defn unstage [e]
+  (when (in-treeview? e)
+    (let [repo (get-repo)
+          gifted (gift (-> repo .-path (str/strip-suffix "/.git")))
+          file (get-selected-path e)]
+
+      (.reset gifted (str "HEAD " #js[file])
+              (callback "unstage" file)))))
 
 (defn commit []
   (println "commiting"))
@@ -54,10 +68,14 @@
   (.add disposables
         (.add js/atom.commands "atom-workspace" "treecommit:stage", stage))
 
-  ; (.add js/atom.commands "atom-workspace" "treecommit:unstage", unstage)
-  ; (.add js/atom.commands "atom-workspace" "treecommit:commit", commit)
-  ; (.add js/atom.commands "atom-workspace" "treecommit:open-chunks", open-chunks)
-  )
+  (.add disposables
+        (.add js/atom.commands "atom-workspace" "treecommit:unstage", unstage))
+
+  (.add disposables
+        (.add js/atom.commands "atom-workspace" "treecommit:commit", commit))
+
+  (.add disposables
+        (.add js/atom.commands "atom-workspace" "treecommit:open-chunks", open-chunks)))
 
 (defn unregister-commands []
   (.dispose disposables))

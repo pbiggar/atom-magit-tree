@@ -14,4 +14,4 @@
   'alt-h': 'treecommit:open-chunks'
 
 'atom-workspace':
-  'ctrl-cmd-s': 'treecommit:stage'
+  'ctrl-cmd-s': 'treecommit:open-treecommit-mode'
