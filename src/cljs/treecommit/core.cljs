@@ -23,9 +23,10 @@
 (defn in-treeview? [e]
   (-> e .-target .-classList firstA (= "tree-view")))
 
-  ;  for projectPath, i in atom.project.getPaths()
-  ;     if goalPath is projectPath or goalPath.indexOf(projectPath + path.sep) is 0
-  ;       return atom.project.getRepositories()[i]
+;; TODO: it won't always be the first repo
+;;  for projectPath, i in atom.project.getPaths()
+;;     if goalPath is projectPath or goalPath.indexOf(projectPath + path.sep) is 0
+;;       return atom.project.getRepositories()[i]
 (defn get-repo []
   (-> js/atom .-project .getRepositories firstA))
 
@@ -72,28 +73,6 @@
 ;;; views
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-
-;           [MD]   not updated
-; M        [ MD]   updated in index
-; A        [ MD]   added to index
-; D         [ M]   deleted from index
-; R        [ MD]   renamed in index
-; C        [ MD]   copied in index
-; [MARC]           index and work tree matches
-; [ MARC]     M    work tree changed since index
-; [ MARC]     D    deleted in work tree
-; -------------------------------------------------
-; D           D    unmerged, both deleted
-; A           U    unmerged, added by us
-; U           D    unmerged, deleted by them
-; U           A    unmerged, added by them
-; D           U    unmerged, deleted by us
-; A           A    unmerged, both added
-; U           U    unmerged, both modified
-; -------------------------------------------------
-; ?           ?    untracked
-; !           !    ignored
-
 (def GIT_STATUS_INDEX_NEW        0)
 (def GIT_STATUS_INDEX_MODIFIED   1)
 (def GIT_STATUS_INDEX_DELETED    2)
@@ -111,36 +90,51 @@
 (defn bit-test-flipped [i s]
   (bit-test s i))
 
-(defn update-statuses [& args]
-  (inspect args))
-
-(defn update-status [pathInfo]
+(defn update-status* [pathInfo]
+  (println "updating status" pathInfo)
   (let [path (.-path pathInfo)
         status (.-pathStatus pathInfo)
-        col1 (condp bit-test-flipped status
-                    GIT_STATUS_INDEX_NEW "A"
-                    GIT_STATUS_INDEX_MODIFIED "M"
-                    GIT_STATUS_INDEX_DELETED "D"
-                    GIT_STATUS_INDEX_RENAMED "R"
-                    GIT_STATUS_IGNORED "!"
-                    GIT_STATUS_WT_NEW "?"
-                    " ")
-        col2 (condp bit-test-flipped status
-                    GIT_STATUS_WT_NEW "?"
-                    GIT_STATUS_WT_MODIFIED "M"
-                    GIT_STATUS_WT_DELETED "D"
-                    GIT_STATUS_WT_RENAMED "R"
-                    GIT_STATUS_CONFLICTED "C"
-                    GIT_STATUS_IGNORED "!"
-                    " ")
-        msg (str col1 col2)]
+        index-status (condp bit-test-flipped (inspect status)
+                            GIT_STATUS_INDEX_NEW "A"
+                            GIT_STATUS_INDEX_MODIFIED "M"
+                            GIT_STATUS_INDEX_DELETED "D"
+                            GIT_STATUS_INDEX_RENAMED "R"
+                            GIT_STATUS_IGNORED "!"
+                            GIT_STATUS_WT_NEW "?"
+                            nil)
+        workdir-status (condp bit-test-flipped status
+                              GIT_STATUS_WT_NEW "?"
+                              GIT_STATUS_WT_MODIFIED "M"
+                              GIT_STATUS_WT_DELETED "D"
+                              GIT_STATUS_WT_RENAMED "R"
+                              GIT_STATUS_CONFLICTED "C"
+                              GIT_STATUS_IGNORED "!"
+                              nil)
+        workdir-class (when workdir-status (str "treecommit-working-" workdir-status))
+        index-class (when index-status (str "treecommit-index-" index-status))
+        query-string (str ".tree-view [data-path=\"" path "\"]")
 
-    (inspect msg))
+        ;; elem will be null if it's hidden
+        ]
+    (when-let [elem (-> js/atom .-document (.querySelector query-string))]
+      (let [existing (-> elem .-className (.split " "))
+            existing (filter #(not (.startsWith % "treecommit")) existing)
+            existing (concat existing [workdir-class index-class])]
+        (aset elem "className" (.join (clj->js existing) " "))))))
 
-  ;; TODO: find the data-path for the file, set the class from there. Remove old classes first
 
-  )
+(defn update-status [source]
+  (fn [p]
+    (println "updating status - " source)
+    (when p
 
+      (update-status* p))))
+
+(defn set-initial-statuses []
+  (let [repo (get-repo)]
+    (doseq [[path status] (-> repo .-statuses js->clj)]
+      ((update-status "initial") (js-obj "path" (-> repo .-path (str/strip-suffix ".git") (str path))
+                             "pathStatus" status)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; disposables and event handlers
@@ -154,11 +148,38 @@
         (.add js/atom.commands "atom-workspace" "treecommit:stage", stage)
         (.add js/atom.commands "atom-workspace" "treecommit:unstage", unstage)))
 
+; onDidStatusChange on a file
+; onDidStatusChange
+; dir -> onDidAddEntries
+; onDidRemoveEntries
+
+; dirs emit:
+  ;   @emitter.emit('did-destroy')
+  ;
+  ; onDidDestroy: (callback) ->
+  ;   @emitter.on('did-destroy', callback)
+  ;
+  ; onDidStatusChange: (callback) ->
+  ;   @emitter.on('did-status-change', callback)
+  ;
+  ; onDidAddEntries: (callback) ->
+  ;   @emitter.on('did-add-entries', callback)
+  ;
+  ; onDidRemoveEntries: (callback) ->
+  ;   @emitter.on('did-remove-entries', callback)
+  ;
+  ; onDidCollapse: (callback) ->
+  ;   @emitter.on('did-collapse', callback)
+  ;
+  ; onDidExpand: (callback) ->
+  ;   @emitter.on('did-expand', callback)
+
+
 (defn subscribe-to-repo []
   (let [repo (get-repo)]
     (.add disposables
-          (.onDidChangeStatuses repo update-statuses)
-          (.onDidChangeStatus repo update-status))))
+          (.onDidChangeStatuses repo (update-status "changeStatuses - plural"))
+          (.onDidChangeStatus repo (update-status "changeStatus")))))
 
 (defn free-disposibles []
   (.dispose disposables))
@@ -172,7 +193,8 @@
 (defn activate [state]
   (set! js/saved nil)
   (register-commands)
-  (subscribe-to-repo))
+  (subscribe-to-repo)
+  (set-initial-statuses))
 
 (defn deactivate []
   (println "Deactivating from treecommit")
