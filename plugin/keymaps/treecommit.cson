@@ -13,7 +13,3 @@
   'ctrl-alt-s': 'treecommit:stage-hunk'
   'ctrl-alt-u': 'treecommit:unstage-hunk'
   'ctrl-alt-[': 'treecommit:stage-hunk-goto-next'
-
-'atom-workspace':
-  # move to tree-view, switch to treecommit mode
-  'ctrl-cmd-t': 'treecommit:open-treecommit-mode'
