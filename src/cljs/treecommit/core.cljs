@@ -80,6 +80,10 @@
 (defn open-selected []
   (dispatch-treeview-command "tree-view:open-selected-entry"))
 
+(defn toggle-modified-files []
+  (println "trigger")
+  (dispatch-treeview-command "tree-view:toggle-vcs-unmodified-files"))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Initialization and deinitialization
@@ -94,7 +98,8 @@
         (.add js/atom.commands "atom-workspace" "treecommit:unstage-selected", unstage)
         (.add js/atom.commands "atom-workspace" "treecommit:move-treeview-up", move-up)
         (.add js/atom.commands "atom-workspace" "treecommit:move-treeview-down", move-down)
-        (.add js/atom.commands "atom-workspace" "treecommit:open-treeview-selected", open-selected)))
+        (.add js/atom.commands "atom-workspace" "treecommit:open-treeview-selected", open-selected)
+        (.add js/atom.commands "atom-workspace" "treecommit:toggle-vcs-unmodified-files", toggle-modified-files)))
 
 
 (defn free-disposibles []

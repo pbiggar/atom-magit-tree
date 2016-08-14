@@ -8,8 +8,12 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/behind-atom-keymaps-in-depth
 'atom-workspace':
-  'ctrl-cmd-s': 'treecommit:stage-file'
-  'ctrl-cmd-u': 'treecommit:unstage-file'
+  'ctrl-cmd-s': 'treecommit:stage-selected'
+  'ctrl-cmd-u': 'treecommit:unstage-selected'
   'ctrl-alt-s': 'treecommit:stage-hunk'
   'ctrl-alt-u': 'treecommit:unstage-hunk'
   'ctrl-alt-[': 'treecommit:stage-hunk-goto-next'
+  'ctrl-cmd-p': 'treecommit:move-treeview-up'
+  'ctrl-cmd-n': 'treecommit:move-treeview-down'
+  'ctrl-cmd-enter': 'treecommit:open-treeview-selected'
+  'ctrl-cmd-t': 'treecommit:toggle-vcs-unmodified-files'
