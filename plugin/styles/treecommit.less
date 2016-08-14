@@ -1,29 +1,2 @@
 @ansi-red: rgba(194, 54, 33, 100);
 @ansi-green: rgba(37, 188, 36, 100);
-
-.gradient-text(@color1, @color2) {
-  background: linear-gradient(to left, @color1, @color2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.tree-view {
-  .treecommit-working-M, .treecommit-index-\? {
-    color: @ansi-red;
-  }
-
-  .treecommit-working-M.treecommit-index-M {
-    .gradient-text(@ansi-red, @ansi-green);
-  }
-
-  // For reasons I can't fathon, the gradient wipes out the icon. Setting these
-  // to inital fixes it. It slightly throws off the alignment, but that's better
-  // I think.
-  .icon-file-text::before {
-    display: initial;
-  }
-  .list-group .icon::before, .list-tree .icon::before {
-    position: initial;
-  }
-
-}
