@@ -1,6 +1,6 @@
 path = require("path");
 process.chdir(__dirname + "/..")
 
-require(path.join(path.resolve("."),"out", "main.js"));
+require(path.join(path.resolve("."),"plugin", "lib", "treecommit.js"));
 
 treecommit.test_core.run_tests()

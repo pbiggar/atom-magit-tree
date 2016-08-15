@@ -7,7 +7,8 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.89"]
                  [funcool/cuerdas "0.8.0"]
-                 [binaryage/devtools "0.8.0"]]
+                 [binaryage/devtools "0.8.0"]
+                 [im.chit/purnam "0.5.2"]]
 
   :npm {:dependencies [[source-map-support "*"]
                        [gift "0.9.0"]]
@@ -23,8 +24,8 @@
 
   :source-paths ["src/cljs" "src/clj" "test/cljs" "test/clj"]
   :profiles {:dev {:source-paths ["src/dev"]
-         :dependencies [[thheller/shadow-build "1.0.215"]
-                        [thheller/shadow-devtools "0.1.42"]]}}
+                   :dependencies [[thheller/shadow-build "1.0.221"]
+                                  [thheller/shadow-devtools "0.1.42"]]}}
 
   :cljsbuild
   {:builds
@@ -38,4 +39,4 @@
                 ;                :source-map true
                 :parallel-build true
                 ;                :output-dir "./plugin/lib/out"
-                :output-to "./plugin/lib/main.js"}}]})
+                :output-to "./plugin/lib/treecommit.js"}}]})

@@ -6,11 +6,11 @@
 
 (defn- plugin-setup []
   (-> (cljs/init-state)
-      (cljs/find-resources-in-classpath)
-      (umd/create-module
+      (cljs/find-resources-in-classpath)      (umd/create-module
        {:activate 'treecommit.core/activate
         :deactivate 'treecommit.core/deactivate
-        :serialize 'treecommit.core/serialize}
+        :serialize 'treecommit.core/serialize
+        :run-tests 'treecommit.test-core/run-tests}
        {:output-to "plugin/lib/treecommit.js"})))
 
 

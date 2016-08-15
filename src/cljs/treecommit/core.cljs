@@ -3,7 +3,8 @@
   (:require [cljs.nodejs :as nodejs]
             [devtools.core :as devtools]
             [cljs.pprint]
-            [cuerdas.core :as str]))
+            [cuerdas.core :as str]
+            [purnam.native]))
 
 (nodejs/enable-util-print!)
 (devtools/install!)
@@ -13,17 +14,6 @@
     (-> js/atom .-workspace .getActiveTextEditor)))
 
 (def gift (nodejs/require "gift"))
-
-
-(defn firstA [fake-array]
-  (aget fake-array 0))
-
-;; TODO: it won't always be the first repo
-;;  for projectPath, i in atom.project.getPaths()
-;;     if goalPath is projectPath or goalPath.indexOf(projectPath + path.sep) is 0
-;;       return atom.project.getRepositories()[i]
-(defn get-repo []
-  (-> js/atom .-project .getRepositories firstA))
 
 (defn get-selected-path []
   (-> js/atom
@@ -52,22 +42,29 @@
         .-commands
         (.dispatch target command))))
 
-(defn get-gifted []
-  (gift (-> (get-repo) .-path (str/strip-suffix "/.git"))))
+;; TODO: it won't always be the first repo
+;;  for projectPath, i in atom.project.getPaths()
+;;     if goalPath is projectPath or goalPath.indexOf(projectPath + path.sep) is 0
+;;       return atom.project.getRepositories()[i]
+(defn get-repo [path]
+  (-> js/atom .-project .getRepositories first))
+
+(defn get-gifted [path]
+  (gift (-> path get-repo .-path (str/strip-suffix "/.git"))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; commands
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn stage []
-  (let [gifted (get-gifted)
-        path (get-selected-path)]
+  (let [path (get-selected-path)
+        gifted (get-gifted path)]
     (.add gifted #js[path]
           (callback "stage" path))))
 
 (defn unstage []
-  (let [gifted (get-gifted)
-        path (get-selected-path)]
+  (let [path (get-selected-path)
+        gifted (get-gifted path)]
     (.reset gifted (str "HEAD " #js[path])
             (callback "unstage" path))))
 
@@ -81,7 +78,6 @@
   (dispatch-treeview-command "tree-view:open-selected-entry"))
 
 (defn toggle-modified-files []
-  (println "trigger")
   (dispatch-treeview-command "tree-view:toggle-vcs-unmodified-files"))
 
 
